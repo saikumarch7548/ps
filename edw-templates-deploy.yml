@@ -1,0 +1,26 @@
+trigger: none
+
+variables:
+  userAzirName: 'Release'
+
+resources:
+  repositories:
+  - repository: source-repository
+    type: git
+    name: cdpadm-projects/adf-cdpadm
+    ref: templates
+  - repository: edwteam-repository
+    type: git
+    endpoint: sc-testing
+    name: edw-projects/adf-edw
+    ref: templates
+
+# Call the template
+extends:
+  template: templates-deploy.yml
+  parameters:
+    teamRepository: edwteam-repository
+    LinkedservicesToDeploy: LS111111*.json
+    datasetsToDeploy: DS*.json
+    templatesToDeploy: TS*.json
+    userAzirName: ${{ variables.userAzirName }}

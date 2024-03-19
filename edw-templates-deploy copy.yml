@@ -1,0 +1,121 @@
+trigger: none
+
+resources:
+  repositories:
+  - repository: source-repository
+    type: git
+    name: cdpadm-projects/adf-cdpadm
+    ref: templates
+  - repository: edwteam-repository
+    type: git
+    endpoint: sc-testing
+    name: edw-projects/adf-edw
+    ref: templates
+
+stages:
+- stage: Build
+  displayName: Build stage:
+
+  jobs:
+  - job: Move_Files
+    displayName: Build Job
+    pool: 'IDEA-Platform'
+
+    steps:
+    # First checkout the main repository
+    - checkout: source-repository
+      path: source-repository
+    # Build related tasks
+    # Checkout secondary repository and add configurations for using git commands
+    - checkout: edwteam-repository
+      path: edwteam-repository
+      persistCredentials: true
+
+    - task: CmdLine@2
+      displayName: Change directory
+      inputs:
+          script: |
+            cd $(Agent.BuildDirectory)/edwteam-repository
+    
+    - task: CmdLine@2
+      inputs:
+          script: |
+            git config --global user.email "heheheh@iam.commmm"
+            git config --global user.name "i love you"
+
+    - task: CmdLine@2
+      displayName: pull
+      inputs:
+          script: |
+            git -C $(Agent.BuildDirectory)/edwteam-repository pull origin templates
+
+    - task: CopyFiles@2
+      inputs:
+          displayName: 'LinkedService Copy'
+          SourceFolder: '$(Agent.BuildDirectory)/source-repository/LinkedService/'
+          Contents: |
+            $(Linkedservices_to_deploy)
+          TargetFolder: '$(Agent.BuildDirectory)/edwteam-repository/LinkedService/'
+          flattenFolders: false
+          CleanTargetFolder: false
+          OverWrite: true
+          # preserveTimestamp: true
+
+    - task: CmdLine@2
+      displayName: 'Replace AZIR Name'
+      inputs:
+          script: |
+            find $(Agent.BuildDirectory)/edwteam-repository/LinkedService/ -type f -exec sed -i 's/azir-adf-cdpadm-dev-eus2/$(user_azir_name)/g' {} +
+          
+    - task: CopyFiles@2
+      inputs:
+          displayName: 'Dataset Copy'
+          SourceFolder: '$(Agent.BuildDirectory)/source-repository/dataset/'
+          Contents: |
+            $(datasets_to_deploy)
+          TargetFolder: '$(Agent.BuildDirectory)/edwteam-repository/dataset'
+          flattenFolders: false
+          CleanTargetFolder: false
+          OverWrite: true
+    
+    - task: CopyFiles@2
+      inputs:
+          displayName: 'Template Copy'
+          SourceFolder: '$(Agent.BuildDirectory)/source-repository/pipeline/'
+          Contents: |
+            $(templates_to_deploy)
+          TargetFolder: '$(Agent.BuildDirectory)/edwteam-repository/pipeline'
+          flattenFolders: false
+          CleanTargetFolder: false
+          OverWrite: true
+    
+
+    - task: CmdLine@2
+      displayName: pull
+      inputs:
+          script: |
+            git -C $(Agent.BuildDirectory)/edwteam-repository checkout -f templates
+
+    - task: CmdLine@2
+      displayName: add
+      inputs:
+          script: |
+            git -C $(Agent.BuildDirectory)/edwteam-repository add --all       
+
+    - task: CmdLine@2
+      displayName: commit
+      inputs:
+          script: |
+            git -C $(Agent.BuildDirectory)/edwteam-repository commit -m "Azure Pipeline Repository Integration"
+
+    - task: CmdLine@2
+      displayName: status
+      inputs:
+          script: |
+            git -C $(Agent.BuildDirectory)/edwteam-repository status
+
+    - task: CmdLine@2
+      displayName: push
+      inputs:
+          script: |
+            git -C $(Agent.BuildDirectory)/edwteam-repository push -u origin templates

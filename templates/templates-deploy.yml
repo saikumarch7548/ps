@@ -1,0 +1,117 @@
+# Azure Pipeline Template for project Integration
+# This template automates the integration of Azure Pipelines with project repositories.
+
+parameters:
+  teamRepository: string     # The name of the project repository
+  LinkedservicesToDeploy: string
+  datasetsToDeploy: string
+  templatesToDeploy: string
+  userAzirName: string
+
+stages:
+- stage: Build
+  displayName: Build stage:
+
+  jobs:
+  - job: Move_Files
+    displayName: Build Job
+    pool: 'IDEA-Platform'
+
+    steps:
+    # First checkout the main repository
+    - checkout: source-repository
+      path: source-repository
+    # Build related tasks
+    # Checkout secondary repository and add configurations for using git commands
+    - checkout: ${{ parameters.teamRepository }}
+      path: ${{ parameters.teamRepository }}
+      persistCredentials: true
+
+    - task: CmdLine@2
+      displayName: Change directory
+      inputs:
+          script: |
+            cd $(Agent.BuildDirectory)/${{ parameters.teamRepository }}
+    
+    - task: CmdLine@2
+      inputs:
+          script: |
+            git config --global user.email "heheheh@iam.commmm"
+            git config --global user.name "i love you"
+
+    - task: CmdLine@2
+      displayName: pull
+      inputs:
+          script: |
+            git -C $(Agent.BuildDirectory)/${{ parameters.teamRepository }} pull origin templates
+
+    - task: CopyFiles@2
+      inputs:
+          displayName: 'LinkedService Copy'
+          SourceFolder: '$(Agent.BuildDirectory)/source-repository/LinkedService/'
+          Contents: |
+            ${{ parameters.LinkedservicesToDeploy }}
+          TargetFolder: '$(Agent.BuildDirectory)/${{ parameters.teamRepository }}/LinkedService/'
+          flattenFolders: false
+          CleanTargetFolder: false
+          OverWrite: true
+          # preserveTimestamp: true
+
+    - task: CmdLine@2
+      displayName: 'Replace AZIR Name'
+      inputs:
+          script: |
+            find $(Agent.BuildDirectory)/${{ parameters.teamRepository }}/LinkedService/ -type f -exec sed -i 's/azir-adf-cdpadm-dev-eus2/${{ parameters.userAzirName }}/g' {} +
+          
+    - task: CopyFiles@2
+      inputs:
+          displayName: 'Dataset Copy'
+          SourceFolder: '$(Agent.BuildDirectory)/source-repository/dataset/'
+          Contents: |
+            ${{ parameters.datasetsToDeploy }}
+          TargetFolder: '$(Agent.BuildDirectory)/${{ parameters.teamRepository }}/dataset'
+          flattenFolders: false
+          CleanTargetFolder: false
+          OverWrite: true
+    
+    - task: CopyFiles@2
+      inputs:
+          displayName: 'Template Copy'
+          SourceFolder: '$(Agent.BuildDirectory)/source-repository/pipeline/'
+          Contents: |
+            ${{ parameters.templatesToDeploy }}
+          TargetFolder: '$(Agent.BuildDirectory)/${{ parameters.teamRepository }}/pipeline'
+          flattenFolders: false
+          CleanTargetFolder: false
+          OverWrite: true
+    
+
+    - task: CmdLine@2
+      displayName: pull
+      inputs:
+          script: |
+            git -C $(Agent.BuildDirectory)/${{ parameters.teamRepository }} checkout -f templates
+
+    - task: CmdLine@2
+      displayName: add
+      inputs:
+          script: |
+            git -C $(Agent.BuildDirectory)/${{ parameters.teamRepository }} add --all       
+
+    - task: CmdLine@2
+      displayName: commit
+      inputs:
+          script: |
+            git -C $(Agent.BuildDirectory)/${{ parameters.teamRepository }} commit -m "Azure Pipeline Repository Integration"
+
+    - task: CmdLine@2
+      displayName: status
+      inputs:
+          script: |
+            git -C $(Agent.BuildDirectory)/${{ parameters.teamRepository }} status
+
+    - task: CmdLine@2
+      displayName: push
+      inputs:
+          script: |
+            git -C $(Agent.BuildDirectory)/${{ parameters.teamRepository }} push -u origin templates
