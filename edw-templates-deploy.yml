@@ -1,7 +1,7 @@
 trigger: none
 
 variables:
-  userAzirName: 'Release'
+  user_azir_name: 'Release'
 
 resources:
   repositories:
@@ -20,7 +20,7 @@ extends:
   template: templates-deploy.yml
   parameters:
     teamRepository: edwteam-repository
-    LinkedservicesToDeploy: LS111111*.json
-    datasetsToDeploy: DS*.json
-    templatesToDeploy: TS*.json
-    userAzirName: ${{ variables.userAzirName }}
+    Linkedservices_to_deploy: LS111111*.json
+    datasets_to_deploy: DS*.json
+    templates_to_deploy: TS*.json
+    user_azir_name: ${{ variables.user_azir_name }}

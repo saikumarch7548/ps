@@ -3,10 +3,10 @@
 
 parameters:
   teamRepository: string     # The name of the project repository
-  LinkedservicesToDeploy: string
-  datasetsToDeploy: string
-  templatesToDeploy: string
-  userAzirName: string
+  Linkedservices_to_deploy: string
+  datasets_to_deploy: string
+  templates_to_deploy: string
+  user_azir_name: string
 
 stages:
 - stage: Build
@@ -50,7 +50,7 @@ stages:
           displayName: 'LinkedService Copy'
           SourceFolder: '$(Agent.BuildDirectory)/source-repository/LinkedService/'
           Contents: |
-            ${{ parameters.LinkedservicesToDeploy }}
+            ${{ parameters.Linkedservices_to_deploy }}
           TargetFolder: '$(Agent.BuildDirectory)/${{ parameters.teamRepository }}/LinkedService/'
           flattenFolders: false
           CleanTargetFolder: false
@@ -61,14 +61,14 @@ stages:
       displayName: 'Replace AZIR Name'
       inputs:
           script: |
-            find $(Agent.BuildDirectory)/${{ parameters.teamRepository }}/LinkedService/ -type f -exec sed -i 's/azir-adf-cdpadm-dev-eus2/${{ parameters.userAzirName }}/g' {} +
+            find $(Agent.BuildDirectory)/${{ parameters.teamRepository }}/LinkedService/ -type f -exec sed -i 's/azir-adf-cdpadm-dev-eus2/${{ parameters.user_azir_name }}/g' {} +
           
     - task: CopyFiles@2
       inputs:
           displayName: 'Dataset Copy'
           SourceFolder: '$(Agent.BuildDirectory)/source-repository/dataset/'
           Contents: |
-            ${{ parameters.datasetsToDeploy }}
+            ${{ parameters.datasets_to_deploy }}
           TargetFolder: '$(Agent.BuildDirectory)/${{ parameters.teamRepository }}/dataset'
           flattenFolders: false
           CleanTargetFolder: false
@@ -79,7 +79,7 @@ stages:
           displayName: 'Template Copy'
           SourceFolder: '$(Agent.BuildDirectory)/source-repository/pipeline/'
           Contents: |
-            ${{ parameters.templatesToDeploy }}
+            ${{ parameters.templates_to_deploy }}
           TargetFolder: '$(Agent.BuildDirectory)/${{ parameters.teamRepository }}/pipeline'
           flattenFolders: false
           CleanTargetFolder: false
