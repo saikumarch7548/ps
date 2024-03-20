@@ -2,11 +2,16 @@
 # This template automates the integration of Azure Pipelines with project repositories.
 
 parameters:
-  teamRepository: string     # The name of the project repository
-  Linkedservices_to_deploy: string
-  datasets_to_deploy: string
-  templates_to_deploy: string
-  user_azir_name: string
+  - name: teamRepository
+    type: string
+  - name: Linkedservices_to_deploy
+    type: string
+  - name: datasets_to_deploy
+    type: string
+  - name: templates_to_deploy
+    type: string
+  - name: user_azir_name
+    type: string
 
 stages:
 - stage: Build
@@ -21,10 +26,12 @@ stages:
     # First checkout the main repository
     - checkout: source-repository
       path: source-repository
+      clean: true
     # Build related tasks
     # Checkout secondary repository and add configurations for using git commands
     - checkout: ${{ parameters.teamRepository }}
       path: ${{ parameters.teamRepository }}
+      clean: true
       persistCredentials: true
 
     - task: CmdLine@2
