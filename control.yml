@@ -1,0 +1,43 @@
+trigger: none
+variables:
+  #timestamp: $[format('{0:yyyyMMdd}-{0:HHmmss}', pipeline.startTime)]
+  parametersFilePath: $(Agent.BuildDirectory)/source-repository/deployment/parameters/all-parameters.txt
+resources:
+  repositories:
+  - repository: source-repository
+    type: git
+    name: cdpadm-projects/adf-cdpadm
+    ref: templates
+  - repository: cns-repository-24   #$(timestamp)
+    type: git
+    # endpoint: $(service_connection)
+    # name: $(dest_project_name)/$(dest_adf_repo_name)
+    endpoint: sc-testing
+    name: cns-projects/adf-cns
+    ref: templates
+
+
+jobs:
+- job: ReadParameters
+  displayName: 'Read Parameters'
+  pool: 'IDEA-Platform'
+  steps:
+  - task: PowerShell@2
+    inputs:
+      targetType: 'inline'
+      script: |
+        $parameters = Get-Content $(parametersFilePath) | ConvertFrom-StringData
+        Write-Host "linkedservices_to_deploy = $($parameters.linkedservices_to_deploy)"
+        Write-Host "datasets_to_deploy = $($parameters.datasets_to_deploy)"
+        Write-Host "templates_to_deploy = $($parameters.templates_to_deploy)"
+
+    # Call the template
+    # Use this section as a control file to specify what values we want the template to take for this project
+
+  - template: deployment/templates/templates-deploy.yml@source-repository
+    parameters:
+      teamRepository: cns-repository-24 #$(timestamp)
+      linkedservices_to_deploy: ${{ parameters.linkedservices_to_deploy }}
+      datasets_to_deploy: ${{ parameters.datasets_to_deploy }}
+      templates_to_deploy: ${{ parameters.templates_to_deploy }}
+      user_azir_name: ${{ variables.user_azir_name }}
