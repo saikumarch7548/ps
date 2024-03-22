@@ -20,7 +20,13 @@ jobs:
         script: |
           $parametersFilePath = "$(Build.SourcesDirectory)/test/all-parameters.txt"
           Write-Host "parametersFilePath: $parametersFilePath"
+
           $parameters = Get-Content $parametersFilePath | ConvertFrom-StringData
+
+          Write-Host "linkedservices_to_deploy = $($parameters.linkedservices_to_deploy)"
+          Write-Host "datasets_to_deploy = $($parameters.datasets_to_deploy)"
+          Write-Host "templates_to_deploy = $($parameters.templates_to_deploy)"
+
           Write-Output "##vso[task.setvariable variable=linkedservices_to_deploy]$($parameters.linkedservices_to_deploy)"
           Write-Output "##vso[task.setvariable variable=datasets_to_deploy]$($parameters.datasets_to_deploy)"
           Write-Output "##vso[task.setvariable variable=templates_to_deploy]$($parameters.templates_to_deploy)"
