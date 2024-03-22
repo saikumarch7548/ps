@@ -22,3 +22,19 @@ jobs:
             Write-Host "linkedservices_to_deploy = $($parameters.linkedservices_to_deploy)"
             Write-Host "datasets_to_deploy = $($parameters.datasets_to_deploy)"
             Write-Host "templates_to_deploy = $($parameters.templates_to_deploy)"
+
+  - job: AnotherJob
+    displayName: 'Another Job'
+    dependsOn: ReadParameters
+    steps:
+      - task: PowerShell@2
+        inputs:
+          targetType: 'inline'
+          script: |
+            $linkedservices_to_deploy = "$(linkedservices_to_deploy)"
+            $datasets_to_deploy = "$(datasets_to_deploy)"
+            $templates_to_deploy = "$(templates_to_deploy)"
+            Write-Host "Using parameters from previous job:"
+            Write-Host "linkedservices_to_deploy = $linkedservices_to_deploy"
+            Write-Host "datasets_to_deploy = $datasets_to_deploy"
+            Write-Host "templates_to_deploy = $templates_to_deploy"
