@@ -6,7 +6,7 @@ pool:
 
 variables:
   # timestamp: $[format('{0:yyyyMMdd}-{0:HHmmss}', pipeline.startTime)]
-  parametersFilePath: $(Pipeline.Workspace)/source-repository/deployment/parameters/all-parameters.txt
+  parametersFilePath: $(Pipeline.Workspace)/test/all-parameters.txt
 
 
 jobs:
