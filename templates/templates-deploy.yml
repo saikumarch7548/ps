@@ -109,15 +109,18 @@ stages:
             inputs:
               script: |
                 git -C $(Agent.BuildDirectory)/${{ parameters.teamRepository }} commit -m "Azure Pipeline Repository Integration"
+              failOnStderr: true
 
           - task: CmdLine@2
             displayName: status
             inputs:
               script: |
                 git -C $(Agent.BuildDirectory)/${{ parameters.teamRepository }} status
+              condition: succeeded('commit')
 
           - task: CmdLine@2
             displayName: push
             inputs:
               script: |
                 git -C $(Agent.BuildDirectory)/${{ parameters.teamRepository }} push -u origin templates
+              condition: succeeded('commit')
