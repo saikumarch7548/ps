@@ -1,0 +1,3 @@
+linkedservices_to_deploy: "LS_BLOB_TEMP.json,LS_FUNCTION.json"
+datasets_to_deploy: "DS_AZBLB_TEMP_BINARY.json"
+templates_to_deploy: "TP_EVENT_AUDIT.json,TP_AUDIT_CUSTOM.json"
